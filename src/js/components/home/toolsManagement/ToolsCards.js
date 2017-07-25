@@ -46,7 +46,7 @@ class ToolsCards extends Component {
         <div style={{ height: '100%', overflowY: 'auto', paddingRight: '10px' }}>
           {
             toolsMetadata.map((metadata, i) => {
-              if (metadata.title === "translationWords (Part 1)") {
+              // if (metadata.title === "translationWords (Part 1)") {
                 return (
                   <ToolCard
                     key={i}
@@ -56,7 +56,7 @@ class ToolsCards extends Component {
                     currentProjectToolsProgress={currentProjectToolsProgress}
                   />
                 );
-              }
+              // }
             })
           }
         </div>
