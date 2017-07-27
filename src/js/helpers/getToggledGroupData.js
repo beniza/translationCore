@@ -7,12 +7,13 @@ import isEqual from 'lodash/isEqual'
  * @return {object} returns the group data object which the key boolen toggled.
  */
 export const getToggledGroupData = (state, action, key) => {
-  let groupData = state.groupsData[action.contextId.groupId]
-  if (groupData == undefined) return groupData
+  let groupData = state.groupsData[action.contextId.groupId];
+  if (groupData == undefined) return groupData;
   let groupObject = groupData.find(groupObject => {
-    return isEqual(groupObject.contextId, action.contextId)
+    action.contextId.reference.verse = parseInt(action.contextId.reference.verse);
+    return isEqual(groupObject.contextId, action.contextId);
   });
-  let index = groupData.indexOf(groupObject)
+  let index = groupData.indexOf(groupObject);
   switch (key) {
     case "comments":
       if (action.text.length > 0) {
