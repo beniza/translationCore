@@ -1,26 +1,26 @@
 [
   {
-    "id": "1",
+    "id": "chapter_1",
     "name": "Chapter 1"
   },
   {
-    "id": "2",
+    "id": "chapter_2",
     "name": "Chapter 2"
   },
   {
-    "id": "3",
+    "id": "chapter_3",
     "name": "Chapter 3"
   },
   {
-    "id": "4",
+    "id": "chapter_4",
     "name": "Chapter 4"
   },
   {
-    "id": "5",
+    "id": "chapter_5",
     "name": "Chapter 5"
   },
   {
-    "id": "6",
+    "id": "chapter_6",
     "name": "Chapter 6"
   }
 ]

@@ -3,165 +3,165 @@
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 1
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 2
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 3
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 4
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 5
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 6
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 7
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 8
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 9
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 10
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 11
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 12
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 13
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 14
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   },
   {
     "contextId": {
       "reference": {
         "bookId": "tit",
-        "chapter": 3,
+        "chapter": 2,
         "verse": 15
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_2"
     }
   }
 ]

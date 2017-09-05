@@ -7,7 +7,7 @@
         "verse": 1
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -18,7 +18,7 @@
         "verse": 2
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -29,7 +29,7 @@
         "verse": 3
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -40,7 +40,7 @@
         "verse": 4
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -51,7 +51,7 @@
         "verse": 5
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -62,7 +62,7 @@
         "verse": 6
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -73,7 +73,7 @@
         "verse": 7
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -84,7 +84,7 @@
         "verse": 8
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -95,7 +95,7 @@
         "verse": 9
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -106,7 +106,7 @@
         "verse": 10
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -117,7 +117,7 @@
         "verse": 11
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -128,7 +128,7 @@
         "verse": 12
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -139,7 +139,7 @@
         "verse": 13
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -150,7 +150,7 @@
         "verse": 14
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -161,7 +161,7 @@
         "verse": 15
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   },
   {
@@ -172,7 +172,7 @@
         "verse": 16
       },
       "tool": "Autographa",
-      "groupId": "1"
+      "groupId": "chapter_1"
     }
   }
 ]
