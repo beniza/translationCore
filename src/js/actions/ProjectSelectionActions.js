@@ -5,49 +5,55 @@ import * as ToolsMetadataActions from './ToolsMetadataActions';
 import * as RecentProjectsActions from './RecentProjectsActions';
 import * as BodyUIActions from './BodyUIActions';
 import * as ProjectDetailsActions from './projectDetailsActions';
-import * as TargetLanguageActions from './TargetLanguageActions';
+import * as ProjectValidationActions from './ProjectValidationActions';
 // helpers
 import * as ProjectSelectionHelpers from '../helpers/ProjectSelectionHelpers';
 import * as LoadHelpers from '../helpers/LoadHelpers';
+import * as manifestHelpers from '../helpers/manifestHelpers';
+import * as usfmHelpers from '../helpers/usfmHelpers';
+import * as migrationHelpers from '../helpers/migrationHelpers';
 
 
 /**
  * Wrapper function to initate selection of a project from path.
- * @param {string} projectPath - Path location in the filesystem for the project.
- * @param {string} projectLink - Link to the projects git repo if provided i.e. https://git.door43.org/royalsix/fwe_tit_text_reg.git.
+ * @param {String} projectPath - Path location in the filesystem for the project.
+ * @param {String} projectLink - Link to the projects git repo if provided i.e. https://git.door43.org/royalsix/fwe_tit_text_reg.git.
  */
 export function selectProject(projectPath, projectLink) {
   return ((dispatch, getState) => {
+    dispatch(BodyUIActions.resetStepLabels(2));
+    //Need to keep user but reset project and tool
+    dispatch(BodyUIActions.updateStepLabel(2, ProjectSelectionHelpers.getProjectName(projectPath)));
     const { username } = getState().loginReducer.userdata;
+    const {projectType} = getState().projectDetailsReducer;
     if (!projectPath) {
       return dispatch(AlertModalActions.openAlertDialog("No project path specified"));
     }
     projectPath = LoadHelpers.saveProjectInHomeFolder(projectPath);
-    let manifest, params, targetLanguage;
+    let manifest, targetLanguage;
     /**@type {String} */
-    let USFMFilePath = LoadHelpers.isUSFMProject(projectPath);
-    //If present proceed to usfm loading process
-    if (USFMFilePath) {
-      let usfmProjectObject = ProjectSelectionHelpers.getProjectDetailsFromUSFM(USFMFilePath, projectPath);
-      let {parsedUSFM, direction} = usfmProjectObject;
+    //If usfm project proceed to usfm loading process
+    if (projectType === 'usfm') {
+      let USFMFilePath = usfmHelpers.isUSFMProject(projectPath);
+      let usfmProjectObject = usfmHelpers.getProjectDetailsFromUSFM(USFMFilePath, projectPath);
+      let { parsedUSFM, direction } = usfmProjectObject;
       targetLanguage = parsedUSFM;
-      manifest = ProjectSelectionHelpers.getUSFMProjectManifest(projectPath, projectLink, parsedUSFM, direction, username);
-      params = LoadHelpers.getUSFMParams(projectPath, manifest);
+      manifest = usfmHelpers.getUSFMProjectManifest(projectPath, projectLink, parsedUSFM, direction, username);
     } else {
       //If no usfm file found proceed to load regular loading process
       manifest = ProjectSelectionHelpers.getProjectManifest(projectPath, projectLink, username);
       if (!manifest) dispatch(AlertModalActions.openAlertDialog("No valid manifest found in project"));
-      params = LoadHelpers.getParams(projectPath, manifest);
     }
+    const { currentSettings } = getState().settingsReducer;
+    if (manifestHelpers.checkIfValidBetaProject(manifest) || currentSettings.developerMode) {
       dispatch(clearLastProject());
-      dispatch(loadProjectDetails(projectPath, manifest, params));
-      TargetLanguageActions.generateTargetBible(projectPath, targetLanguage, manifest);
-      if (LoadHelpers.projectHasMergeConflicts(projectPath, manifest.project.id)) dispatch(AlertModalActions.openAlertDialog("Oops! The project you are trying to load has a merge conflict and cannot be opened in this version of translationCore! Please contact Help Desk (help@door43.org) for assistance."));
-      if (LoadHelpers.projectIsMissingVerses(projectPath, manifest.project.id)) {
-        dispatch(confirmOpenMissingVerseProjectDialog(projectPath, manifest))
-      } else {
-        dispatch(displayTools(manifest));
-      }
+      dispatch(loadProjectDetails(projectPath, manifest));
+      dispatch(ProjectValidationActions.validateProject());
+    } else {
+      dispatch(AlertModalActions.openAlertDialog('This version of translationCore only supports Titus projects.'));
+      dispatch(RecentProjectsActions.getProjectsFromFolder());
+      dispatch(clearLastProject());
+    }
   })
 }
 
@@ -62,7 +68,7 @@ export function confirmOpenMissingVerseProjectDialog(projectPath, manifest) {
     const callback = (option) => {
       dispatch(AlertModalActions.closeAlertDialog());
       if (option != "Cancel") {
-        dispatch(displayTools(manifest));
+        dispatch(displayTools());
       } else {
         dispatch(clearLastProject());
       }
@@ -80,15 +86,12 @@ export function confirmOpenMissingVerseProjectDialog(projectPath, manifest) {
  * @description loads and set the projects details into the projectDetailsReducer.
  * @param {string} projectPath - path location in the filesystem for the project.
  * @param {object} manifest - project manifest.
- * @param {object} params - parameters defining a projects detals, similiar to metadata.
  */
-export function loadProjectDetails(projectPath, manifest, params) {
+export function loadProjectDetails(projectPath, manifest) {
   return ((dispatch) => {
-    LoadHelpers.migrateAppsToDotApps(projectPath);
+    migrationHelpers.migrateAppsToDotApps(projectPath);
     dispatch(ProjectDetailsActions.setSaveLocation(projectPath));
     dispatch(ProjectDetailsActions.setProjectManifest(manifest));
-    dispatch(ProjectDetailsActions.setProjectDetail("bookName", manifest.project.name));
-    dispatch(ProjectDetailsActions.setProjectParams(params));
   });
 }
 
@@ -108,15 +111,16 @@ export function clearLastProject() {
   });
 }
 
-export function displayTools(manifest) {
+export function displayTools() {
   return ((dispatch, getState) => {
     const { currentSettings } = getState().settingsReducer;
-    if (LoadHelpers.checkIfValidBetaProject(manifest) || currentSettings.developerMode) {
+    const { manifest } = getState().projectDetailsReducer;
+    if (manifestHelpers.checkIfValidBetaProject(manifest) || currentSettings.developerMode) {
       dispatch(ToolsMetadataActions.getToolsMetadatas());
       // Go to toolsCards page
       dispatch(BodyUIActions.goToStep(3));
     } else {
-      dispatch(AlertModalActions.openAlertDialog('You can only load Titus projects for now.'));
+      dispatch(AlertModalActions.openAlertDialog('This version of translationCore only supports Titus projects.'));
       dispatch(RecentProjectsActions.getProjectsFromFolder());
       dispatch(clearLastProject())
     }

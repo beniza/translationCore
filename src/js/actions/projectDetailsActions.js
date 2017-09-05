@@ -1,39 +1,28 @@
 import consts from './ActionTypes';
-import fs from 'fs-extra';
 import path from 'path-extra';
+//actions
+import * as BodyUIActions from './BodyUIActions';
+// helpers
+import * as bibleHelpers from '../helpers/bibleHelpers';
+import * as ProjectDetailsHelpers from '../helpers/ProjectDetailsHelpers';
+import * as ProjectSelectionHelpers from '../helpers/ProjectSelectionHelpers';
 // constants
 const INDEX_FOLDER_PATH = path.join('.apps', 'translationCore', 'index');
 
 /**
  * @description sets the project save location in the projectDetailReducer.
- * @param {string} pathLocation - project save location and/or directory.
+ * @param {String} pathLocation - project save location and/or directory.
  * @return {object} action object.
  */
 export const setSaveLocation = pathLocation => {
-  return {
+  return((dispatch) => {
+    dispatch({
     type: consts.SET_SAVE_PATH_LOCATION,
     pathLocation
-  };
-};
-/**
- * @description this sets a key name and a value name in the project detail reducer.
- *  @example key = bookName and value = 'Matthew' then
- *  projectDetailReducer will look as follow:
- *  {
- *    ...,
- *    bookname: Matthew
- *  }
- * @param {sting} key - projectDetailReducer key name where value is saved.
- * @param {*} value - this variable could be anything from a string, array,
- * object, boolean ect.
- * @return {object} action object.
- */
-export const setProjectDetail = (key, value) => {
-  return {
-    type: consts.SET_PROJECT_DETAIL,
-    key,
-    value
-  };
+  })
+  //the home stepper label may be need to be updated when setting the new path location
+  dispatch(BodyUIActions.updateStepLabel(2, ProjectSelectionHelpers.getProjectName(pathLocation)));
+  })
 };
 
 export const resetProjectDetail = () => {
@@ -41,6 +30,27 @@ export const resetProjectDetail = () => {
     type: consts.RESET_PROJECT_DETAIL
   };
 };
+
+export function getProjectProgressForTools(toolName) {
+  return ((dispatch, getState) => {
+    const {
+      projectDetailsReducer: {
+        projectSaveLocation,
+        manifest
+      }
+    } = getState();
+
+    const bookId = manifest.project.id;
+    const pathToCheckDataFiles = path.join(projectSaveLocation, INDEX_FOLDER_PATH, toolName, bookId);
+    const progress = ProjectDetailsHelpers.getToolProgress(pathToCheckDataFiles);
+
+    dispatch({
+      type: consts.SET_PROJECT_PROGRESS_FOR_TOOL,
+      toolName,
+      progress
+    });
+  });
+}
 
 /**
  * @description Sends project manifest to the store
@@ -55,73 +65,76 @@ export function setProjectManifest(manifest) {
 }
 
 /**
- * @description Sends project parameters to the store
- * @param {*} params - any params to be saved.
- * @return {object} action object.
+ * @description adds a new key name to the manifest object
+ * @param {String} propertyName - key string name. 
+ * ex. 
+ * manifest {
+ *  ...,
+ *  [propertyName]: 'value',
+ *  ...
+ * }
+ * @param {*} value - value to be saved in the propertyName
  */
-export function setProjectParams(params) {
+export function addObjectPropertyToManifest(propertyName, value) {
   return {
-    type: consts.STORE_PARAMS,
-    params: params
+    type: consts.ADD_MANIFEST_PROPERTY,
+    propertyName,
+    value
   };
 }
 
-export function getProjectProgressForTools(toolName) {
+
+export function setProjectBookIdAndBookName() {
   return ((dispatch, getState) => {
-    const {
-      projectDetailsReducer: {
-        projectSaveLocation,
-        params
-      }
-    } = getState();
-
-    const bookId = params.bookAbbr;
-    const pathToCheckDataFiles = path.join(projectSaveLocation, INDEX_FOLDER_PATH, toolName, bookId);
-    const progress = getToolProgress(pathToCheckDataFiles);
-
+    const { bookId } = getState().projectInformationCheckReducer;
+    const bookName = bibleHelpers.convertToFullBookName(bookId);
     dispatch({
-      type: consts.SET_PROJECT_PROGRESS_FOR_TOOL,
-      toolName,
-      progress
+      type: consts.SAVE_BOOK_ID_AND_BOOK_NAME_IN_MANIFEST,
+      bookId,
+      bookName
     });
   });
 }
 
-function getToolProgress(pathToCheckDataFiles) {
-  let progress = 0;
-  if(fs.existsSync(pathToCheckDataFiles)) {
-    let groupDataFiles = fs.readdirSync(pathToCheckDataFiles).filter(file => { // filter out .DS_Store
-          return file !== '.DS_Store' && path.extname(file) === '.json'
+export function setLanguageDetails() {
+  return ((dispatch, getState) => {
+    const { languageDirection, languageId, languageName } = getState().projectInformationCheckReducer;
+    dispatch({
+      type: consts.SAVE_LANGUAGE_DETAILS_IN_MANIFEST,
+      languageDirection,
+      languageId,
+      languageName
     });
-    let allGroupDataObjects = {};
-    groupDataFiles.map((groupDataFileName) => {
-      const groupData = fs.readJsonSync(path.join(pathToCheckDataFiles, groupDataFileName));
-      allGroupDataObjects[groupDataFileName.replace('.json', '')] = groupData;
+  });
+}
+
+export function updateContributors() {
+  return ((dispatch, getState) => {
+    const { contributors } = getState().projectInformationCheckReducer;
+    dispatch({
+      type: consts.SAVE_TRANSLATORS_LIST_IN_MANIFEST,
+      translators: contributors
     });
-    progress = calculateProgress(allGroupDataObjects);
-  }
-  return progress;
+  });
+}
+
+export function updateCheckers() {
+  return ((dispatch, getState) => {
+    const { checkers } = getState().projectInformationCheckReducer;
+    dispatch({
+      type: consts.SAVE_CHECKERS_LIST_IN_MANIFEST,
+      checkers
+    });
+  });
 }
 
 /**
-  * @description generates the progress percentage
-  * @param {object} groupsData - all of the data to calculate percentage from
-  * @return {double} - percentage number returned
-  */
-function calculateProgress(groupsData) {
-  let percent;
-  const groupIds = Object.keys(groupsData);
-  let totalChecks = 0, completedChecks = 0;
-  // Loop through all checks and tally completed and totals
-  groupIds.forEach( groupId => {
-    const groupData = groupsData[groupId];
-    groupData.forEach( check => {
-      totalChecks += 1;
-      // checks are considered completed if selections
-      completedChecks += (check.selections) ? 1 : 0;
-    });
-  });
-  // calculate percentage by dividing total by completed
-  percent = Math.round(completedChecks / totalChecks * 100) / 100;
-  return percent;
+ * Sets the type of project currently being loaded
+ * @param {string} projectType 
+ */
+export function setProjectType(projectType) {
+  return {
+    type:consts.SET_PROJECT_TYPE,
+    projectType
   }
+}

@@ -9,8 +9,7 @@ import { changeSelections, validateSelections } from '../actions/SelectionsActio
 import { changeCurrentContextId, loadCurrentContextId, changeToNextContextId, changeToPreviousContextId } from '../actions/ContextIdActions';
 import { addGroupData } from '../actions/GroupsDataActions';
 import { setGroupsIndex } from '../actions/GroupsIndexActions';
-import { setToolSettings } from '../actions/ToolsSettingsActions';
-import { setProjectDetail } from '../actions/ProjectDetailsActions';
+import { setToolSettings } from '../actions/SettingsActions';
 import { openAlertDialog, openOptionDialog, closeAlertDialog } from '../actions/AlertModalActions';
 import { selectModalTab } from '../actions/ModalActions';
 import * as ResourcesActions from '../actions/ResourcesActions';
@@ -109,9 +108,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       },
       setToolSettings: (NAMESPACE, settingsPropertyName, toolSettingsData) => {
         dispatch(setToolSettings(NAMESPACE, settingsPropertyName, toolSettingsData));
-      },
-      setProjectDetail: (key, value) => {
-        dispatch(setProjectDetail(key, value));
       },
       openAlertDialog: (message) => {
         dispatch(openAlertDialog(message));

@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import path from 'path-extra';
 // helpers
 import { shiftGroupIndex, shiftGroupDataItem } from '../helpers/navigationHelpers';
+import * as contextIdHelpers from '../helpers/contextIdHelpers';
 // actions
 import { loadComments, loadReminders, loadSelections, loadVerseEdit } from './CheckDataLoadActions';
 import { saveContextId } from '../utils/saveMethods';
@@ -27,14 +28,19 @@ export const changeCurrentContextId = contextId => {
     dispatch({
       type: consts.CHANGE_CURRENT_CONTEXT_ID,
       contextId
-    })
+    });
     if (contextId) {
-      loadCheckData(dispatch)
+      loadCheckData(dispatch);
       dispatch(ResourcesActions.loadBiblesChapter(contextId));
-      let state = getState()
-      saveContextId(state, contextId)
+      let state = getState();
+      const isValidContextId = contextIdHelpers.validateContextIdQuote(state, contextId, 'ulb');
+      if (isValidContextId) {
+        saveContextId(state, contextId);
+      } else {
+        dispatch(changeToNextContextId());
+      }
     }
-  })
+  });
 }
 /**
  * @description this action changes the contextId to the first check.
@@ -113,12 +119,7 @@ export const changeToNextContextId = () => {
     } else {
       contextId = newGroupDataItem.contextId
     }
-    dispatch({
-      type: consts.CHANGE_CURRENT_CONTEXT_ID,
-      contextId
-    })
-    loadCheckData(dispatch)
-    dispatch(ResourcesActions.loadBiblesChapter(contextId));
+    dispatch(changeCurrentContextId(contextId));
   })
 }
 
@@ -151,12 +152,7 @@ export const changeToPreviousContextId = () => {
     } else {
       contextId = newGroupDataItem.contextId
     }
-    dispatch({
-      type: consts.CHANGE_CURRENT_CONTEXT_ID,
-      contextId
-    })
-    loadCheckData(dispatch)
-    dispatch(ResourcesActions.loadBiblesChapter(contextId));
+    dispatch(changeCurrentContextId(contextId));
   })
 }
 /**
@@ -166,9 +162,9 @@ export const changeToPreviousContextId = () => {
 export function loadCurrentContextId() {
   return (dispatch, getState) => {
     let state = getState();
-    let { projectSaveLocation, params } = state.projectDetailsReducer
+    let { projectSaveLocation, manifest } = state.projectDetailsReducer
     let { currentToolName } = state.toolsReducer
-    let bookId = params ? params.bookAbbr : undefined
+    let bookId = manifest.project.id ? manifest.project.id : undefined
     let fileName = "contextId.json"
 
     if (projectSaveLocation && currentToolName && bookId) {
@@ -181,12 +177,7 @@ export function loadCurrentContextId() {
           contextId = firstContextId(state)
         }
         if (contextId) {
-          dispatch({
-            type: consts.CHANGE_CURRENT_CONTEXT_ID,
-            contextId
-          })
-          loadCheckData(dispatch)
-          dispatch(ResourcesActions.loadBiblesChapter(contextId));
+          dispatch(changeCurrentContextId(contextId));
         }
       } catch (err) {
         // The object is undefined because the file wasn't found in the directory

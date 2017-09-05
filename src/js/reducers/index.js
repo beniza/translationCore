@@ -21,6 +21,12 @@ import groupsIndexReducer from './groupsIndexReducer'
 import verseEditReducer from './verseEditReducer'
 import homeScreenReducer from './homeScreenReducer'
 import myProjectsReducer from './myProjectsReducer'
+import projectValidationReducer from './projectValidationReducer'
+import copyrightCheckReducer from './copyrightCheckReducer'
+import projectInformationCheckReducer from './projectInformationCheckReducer'
+import mergeConflictReducer from './mergeConflictReducer'
+import missingVersesReducer from './missingVersesReducer'
+
 // combining reducers
 const rootReducers = combineReducers({
   toolsReducer,
@@ -43,7 +49,12 @@ const rootReducers = combineReducers({
   groupsIndexReducer,
   verseEditReducer,
   homeScreenReducer,
-  myProjectsReducer
+  myProjectsReducer,
+  projectValidationReducer,
+  copyrightCheckReducer,
+  projectInformationCheckReducer,
+  mergeConflictReducer,
+  missingVersesReducer
 });
 
 export default rootReducers;

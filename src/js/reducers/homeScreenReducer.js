@@ -6,13 +6,15 @@ const initialState = {
   showWelcomeSplash: true,
   homeInstructions: <div></div>,
   stepper: {
-    finished: false,
     stepIndex: 0,
     nextStepName: 'Go To User',
     previousStepName: '',
-    nextDisabled: false
+    nextDisabled: false,
+    stepIndexAvailable: [true, true, false, false],
+    stepperLabels: ['Home', 'User', 'Project', 'Tool']
   },
   showFABOptions: false,
+  showLicenseModal: false,
   onlineImportModalVisibility: false
 };
 
@@ -33,24 +35,16 @@ const homeScreenReducer = (state = initialState, action) => {
         ...state,
         homeInstructions: action.instructions
       };
-    case consts.GO_TO_NEXT_STEP:
+    case consts.GO_TO_STEP:
       return {
         ...state,
         stepper: {
-          finished: action.finished,
+          ...state.stepper,
           stepIndex: action.stepIndex,
           previousStepName: action.previousStepName,
-          nextStepName: action.nextStepName
-        }
-      };
-    case consts.GO_TO_PREVIOUS_STEP:
-      return {
-        ...state,
-        stepper: {
-          finished: false,
-          stepIndex: action.stepIndex,
-          previousStepName: action.previousStepName,
-          nextStepName: action.nextStepName
+          nextStepName: action.nextStepName,
+          stepIndexAvailable: action.stepIndexAvailable,
+          nextDisabled: action.nextDisabled
         }
       };
     case consts.TOGGLE_PROJECTS_FAB:
@@ -74,6 +68,43 @@ const homeScreenReducer = (state = initialState, action) => {
         stepper: {
           ...state.stepper,
           nextDisabled: action.nextDisabled
+        }
+      }
+    case consts.OPEN_LICENSE_MODAL:
+      return {
+        ...state,
+        showLicenseModal: true
+      }
+    case consts.CLOSE_LICENSE_MODAL:
+      return {
+        ...state,
+        showLicenseModal: false
+      }
+    case consts.UPDATE_STEPPER_LABEL:
+   /** Implementation per redux docs for immutable state arrays 
+    * @see http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html#inserting-and-removing-items-in-arrays */
+      return {
+        ...state,
+        stepper: {
+          ...state.stepper,
+          stepperLabels: [
+            ...state.stepper.stepperLabels.slice(0, action.index),
+            action.label || initialState.stepper.stepperLabels[action.index],
+            ...state.stepper.stepperLabels.slice(action.index + 1)
+          ]
+        }
+      }
+    case consts.RESET_STEPPER_LABELS:
+    /** Implementation per redux docs for immutable state arrays 
+    * @see http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html#inserting-and-removing-items-in-arrays */
+      return {
+        ...state,
+        stepper: {
+          ...state.stepper,
+          stepperLabels: [
+            ...state.stepper.stepperLabels.slice(0, action.indexToStop + 1),
+            ...initialState.stepper.stepperLabels.slice(action.indexToStop + 1),
+          ]
         }
       }
     default:

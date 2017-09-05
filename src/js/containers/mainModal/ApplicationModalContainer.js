@@ -4,7 +4,6 @@ import { Tabs, Tab } from 'react-bootstrap/lib';
 // components
 import Login from '../../components/login/Login';
 import Profile from '../../components/login/Profile';
-import Licenses from '../../components/licenses/Licenses';
 // Actions
 import * as LoginActions from '../../actions/LoginActions';
 import * as SettingsActions from '../../actions/SettingsActions';
@@ -30,9 +29,6 @@ class ApplicationModalContainer extends React.Component {
           <Tab eventKey={1} title="Account">
             {accountDisplay}
           </Tab>
-          <Tab eventKey={2} title="Licenses" style={{ backgroundColor: "var(--reverse-color)" }}>
-            <Licenses />
-          </Tab>
         </Tabs>
       </div>
     );
@@ -47,11 +43,8 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch, ownProps) => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    handleSubmit: (userDataSumbit) => {
-      dispatch(LoginActions.loginUser(userDataSumbit));
-    },
     onHandleLogout: () => {
       dispatch(LoginActions.logoutUser());
     },
@@ -66,9 +59,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     },
     submitFeedback: () => {
       dispatch(LoginActions.submitFeedback());
-    },
-    loginLocalUser: (localUsername) => {
-      dispatch(LoginActions.loginLocalUser(localUsername));
     },
     goToProjectsTab: () => {
       dispatch(modalActions.selectModalTab(2, 1, true));

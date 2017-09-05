@@ -18,8 +18,8 @@ import * as LoadHelpers from '../helpers/LoadHelpers';
 export function selectTool(moduleFolderName, currentToolName) {
   return ((dispatch) => {
     // TODO: Remove after homescreen implementation
+    dispatch(BodyUIActions.updateStepLabel(3, currentToolName))
     dispatch(ModalActions.showModalContainer(false))
-    dispatch(BodyUIActions.toggleHomeView(true));
     dispatch({ type: consts.START_LOADING });
     setTimeout(() => {
       try {
@@ -41,7 +41,6 @@ export function selectTool(moduleFolderName, currentToolName) {
         dispatch(saveToolViews(checkArray));
         // load project data
         dispatch(ProjectLoadingActions.loadProjectData(currentToolName));
-        dispatch(BodyUIActions.toggleHomeView(false));
       } catch (e) {
         console.warn(e);
         AlertModalActions.openAlertDialog("Oops! We have encountered a problem setting up your project to be loaded. Please contact Help Desk (help@door43.org) for assistance.");
@@ -59,11 +58,11 @@ export function saveToolViews(checkArray) {
   return (dispatch => {
     for (let module of checkArray) {
       try {
-        const viewObj = require(path.join(module.location, 'Container'));
+        const viewObj = require(path.join(module.location, 'index')).default;
         dispatch({
           type: consts.SAVE_TOOL_VIEW,
           identifier: module.name,
-          module: viewObj.view || viewObj.container
+          module: viewObj.container
         })
       } catch (e) {
         console.log(e);

@@ -34,48 +34,35 @@ export const changeHomeInstructions = instructions => {
 export const goToNextStep = () => {
   return ((dispatch, getState) => {
     const { stepIndex } = getState().homeScreenReducer.stepper;
-    if (stepIndex < 3) {
-      let nextStepName = homeStepperIndex[stepIndex + 2];
-      let previousStepName = homeStepperIndex[stepIndex];
-      dispatch({
-        type: consts.GO_TO_NEXT_STEP,
-        stepIndex: stepIndex + 1,
-        nextStepName: nextStepName,
-        previousStepName: previousStepName,
-        finished: stepIndex >= 2
-      });
-    } else {
-      dispatch(AlertModalActions.openAlertDialog("You're at the last step"));
-    }
+    dispatch(goToStep(stepIndex + 1))
   });
 };
 
 export const goToPrevStep = () => {
   return ((dispatch, getState) => {
     const { stepIndex } = getState().homeScreenReducer.stepper;
-    let nextStepName = homeStepperIndex[stepIndex];
-    let previousStepName = homeStepperIndex[stepIndex - 2];
-    if (stepIndex > 0) {
-      dispatch({
-        type: consts.GO_TO_PREVIOUS_STEP,
-        nextStepName: nextStepName,
-        previousStepName: previousStepName,
-        stepIndex: stepIndex - 1
-      });
-    }
+    dispatch(goToStep(stepIndex - 1))
   });
 };
 
+/**
+ * Goes to specified step
+ * @param {number} stepNumber - Number of step to go to in home stepper
+ */
 export const goToStep = stepNumber => {
-  return ((dispatch) => {
+  return ((dispatch, getState) => {
     let nextStepName = homeStepperIndex[stepNumber + 1];
     let previousStepName = homeStepperIndex[stepNumber - 1];
     if (stepNumber >= 0 && stepNumber <= 3) {
+      let stepIndexAvailable = canGoToIndex(stepNumber, getState());
+      if (!stepIndexAvailable[stepNumber]) return;
       dispatch({
-        type: consts.GO_TO_PREVIOUS_STEP,
+        type: consts.GO_TO_STEP,
         stepIndex: stepNumber,
         nextStepName: nextStepName,
-        previousStepName: previousStepName
+        previousStepName: previousStepName,
+        stepIndexAvailable: stepIndexAvailable,
+        nextDisabled: false
       });
     } else if (stepNumber < 0) {
       console.error("The min number of steps is 0. (0-3)")
@@ -104,54 +91,65 @@ export const closeOnlineImportModal = () => {
 };
 
 /**
- * Determines if the next button is diabled or not, dispatches result based on 
+ * Determines if the next button is disabled or not, dispatches result based on 
  * user completed actions relevant to step
  */
 export const getStepperNextButtonIsDisabled = () => {
   return ((dispatch, getState) => {
     let state = getState();
-    let { stepIndex, nextDisabled } = state.homeScreenReducer.stepper;
-    let { loggedInUser } = state.loginReducer;
-    let {projectSaveLocation} = state.projectDetailsReducer;
-    let lastNextButtonStatus = nextDisabled;
-    let currentNextButtonStatus;
-    switch (stepIndex) {
-      case 0:
-      //home
-        currentNextButtonStatus = false;
-        if (lastNextButtonStatus != currentNextButtonStatus) {
-          dispatch({ type: consts.UPDATE_NEXT_BUTTON_STATUS, nextDisabled: currentNextButtonStatus });
-        }
-        return;
-      case 1:
-      //user
-        currentNextButtonStatus = !loggedInUser;
-        if (lastNextButtonStatus != currentNextButtonStatus) {
-          dispatch({ type: consts.UPDATE_NEXT_BUTTON_STATUS, nextDisabled: currentNextButtonStatus });
-        }
-        return;
-      case 2:
-      //projects
-        currentNextButtonStatus = !projectSaveLocation;
-        if (lastNextButtonStatus != currentNextButtonStatus) {
-          dispatch({ type: consts.UPDATE_NEXT_BUTTON_STATUS, nextDisabled: currentNextButtonStatus });
-        }
-        return;
-      case 3:
-      //tools
-        currentNextButtonStatus = true;
-        if (lastNextButtonStatus != currentNextButtonStatus) {
-          dispatch({ type: consts.UPDATE_NEXT_BUTTON_STATUS, nextDisabled: currentNextButtonStatus });
-        }
-        return;
-      default:
-        currentNextButtonStatus = false;
-        if (lastNextButtonStatus != currentNextButtonStatus) {
-          dispatch({ type: consts.UPDATE_NEXT_BUTTON_STATUS, nextDisabled: currentNextButtonStatus });
-        }
-        return;
+    let { nextDisabled, stepIndex } = state.homeScreenReducer.stepper;
+    let currentNextButtonStatus = canGoToIndex(stepIndex + 1, state)
+    if (nextDisabled != !currentNextButtonStatus[stepIndex + 1]) {
+      dispatch({ type: consts.UPDATE_NEXT_BUTTON_STATUS, nextDisabled: !currentNextButtonStatus[stepIndex + 1] });
     }
   })
 }
 
+/**
+ * Determines if the home stepper can go to the index specified based on the 
+ * requirements a user must have already completed in order to advance to selected step
+ * @param {number} stepIndex - The index of the step that is being checked for met requirements
+ * @param {object} state - Entire state object of the store
+ * @returns [...bool]
+ */
+export const canGoToIndex = (stepIndex, state) => {
+  let { loggedInUser } = state.loginReducer;
+  let { projectSaveLocation } = state.projectDetailsReducer;
+  let availableArray = [true, true, false, false];
+  availableArray[2] = !!loggedInUser;
+  availableArray[3] = !!projectSaveLocation;
+  return availableArray;
+}
 
+export const openLicenseModal = () => {
+  return {
+    type: consts.OPEN_LICENSE_MODAL
+  }
+}
+
+export const closeLicenseModal = () => {
+  return {
+    type: consts.CLOSE_LICENSE_MODAL
+  }
+}
+
+export const updateStepLabel = (index, label) => {
+  return {
+    type: consts.UPDATE_STEPPER_LABEL,
+    index,
+    label
+  }
+}
+
+/**
+ * This action resets all the header labels to a certain index.
+ * i.e. headers are => ['Home', 'royalsix', 'a_project_name']
+ * Then passing 1 as index would cause them to be ['Home', 'User', 'Project']
+ * @param {number} indexToStop - Index to reset label up until
+ */
+export const resetStepLabels = (indexToStop) => {
+    return {
+      type: consts.RESET_STEPPER_LABELS,
+      indexToStop
+    }
+}

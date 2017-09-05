@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import fs from 'fs-extra';
 import path from 'path-extra';
 import consts from './ActionTypes';
@@ -6,6 +7,7 @@ import * as AlertModalActions from './AlertModalActions';
 import * as GroupsDataActions from './GroupsDataActions';
 import * as GroupsIndexActions from './GroupsIndexActions';
 import * as LoaderActions from './LoaderActions';
+import * as BodyUIActions from './BodyUIActions';
 // helpers
 import * as ResourcesHelpers from '../helpers/ResourcesHelpers';
 /**
@@ -18,15 +20,17 @@ export function loadProjectData(currentToolName) {
   return ((dispatch, getState) => {
     return new Promise((resolve, reject) => {
       let { projectDetailsReducer } = getState();
-      let { projectSaveLocation, params } = projectDetailsReducer;
+      let { projectSaveLocation, manifest } = projectDetailsReducer;
+      let bookAbbreviation = manifest.project.id;
       const dataDirectory = path.join(projectSaveLocation, '.apps', 'translationCore', 'index', currentToolName);
 
       getGroupsIndex(dispatch, dataDirectory, currentToolName)
         .then(() => {
-          getGroupsData(dispatch, dataDirectory, currentToolName, params)
+          getGroupsData(dispatch, dataDirectory, currentToolName, bookAbbreviation)
           .then(() => {
             dispatch(GroupsDataActions.verifyGroupDataMatchesWithFs());
             dispatch({ type: consts.TOGGLE_LOADER_MODAL, show: false });
+            dispatch(BodyUIActions.toggleHomeView(false));
           });
         });
     })
@@ -74,14 +78,14 @@ function getGroupsIndex(dispatch, dataDirectory, currentToolName) {
 /**
  * @description loads the group index from the filesystem.
  * @param {function} dispatch - redux action dispatcher.
- * @param {string} dataDirectory - group data path or save location in the filesystem.
- * @param {string} currentToolName - name if the tool being loaded.
- * @param {object} params - object of project details params.
+ * @param {String} dataDirectory - group data path or save location in the filesystem.
+ * @param {String} currentToolName - name if the tool being loaded.
+ * @param {String} bookAbbreviation - book abbreviation stinrg.
  * @return {object} object action / Promises.
  */
-export function getGroupsData(dispatch, dataDirectory, currentToolName, params) {
+export function getGroupsData(dispatch, dataDirectory, currentToolName, bookAbbreviation) {
   return new Promise((resolve, reject) => {
-    let groupsDataDirectory = path.join(dataDirectory, params.bookAbbr);
+    let groupsDataDirectory = path.join(dataDirectory, bookAbbreviation);
     if (fs.existsSync(groupsDataDirectory)) {
       // read in the groupsData files and load groupsData to reducer
       loadAllGroupsData(groupsDataDirectory, currentToolName, dispatch);
@@ -90,7 +94,7 @@ export function getGroupsData(dispatch, dataDirectory, currentToolName, params) 
     } else {
       // The groups data files were not found in the directory thus copy
       // them from User resources folder to project resources folder.
-      ResourcesHelpers.copyGroupsDataToProjectResources(currentToolName, groupsDataDirectory, params.bookAbbr);
+      ResourcesHelpers.copyGroupsDataToProjectResources(currentToolName, groupsDataDirectory, bookAbbreviation);
       // read in the groupsData files and load groupsData to reducer
       loadAllGroupsData(groupsDataDirectory, currentToolName, dispatch);
       console.log('Generated and Loaded group data data from fs');

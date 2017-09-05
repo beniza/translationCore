@@ -1,14 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux'
-import { Grid, Row, Col, Glyphicon } from 'react-bootstrap'
+import { Grid, Col, Glyphicon } from 'react-bootstrap'
 import * as style from '../components/groupMenu/Style'
 // components
 import Groups from '../components/groupMenu/Groups'
 import Group from '../components/groupMenu/Group'
 // actions
 import { changeCurrentContextId } from '../actions/ContextIdActions.js'
-import { toggleMenu } from '../actions/SideBarActions.js'
+import { expandSubMenu } from '../actions/GroupMenuActions.js'
 import GroupItem from '../components/groupMenu/GroupItem'
 import * as CheckDataLoadActions from '../actions/CheckDataLoadActions';
 import isEqual from 'lodash/isEqual'
@@ -28,9 +28,8 @@ const groupMenuContainerStyle = {
 
 class GroupMenuContainer extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
   }
-
 
   menu(currentToolName) {
     let menu = <div />
@@ -43,7 +42,7 @@ class GroupMenuContainer extends React.Component {
 
   /**
  * @description - Tests if the the two elements are in the scope of the window (scroll bar)
- * The consts MENU_BAR_HEIGHT & MENU_ITEM_HEIGHT are set to account for the static window avialablity 
+ * The consts MENU_BAR_HEIGHT & MENU_ITEM_HEIGHT are set to account for the static window avialablity
  * @param {object} groupMenu - The current group menu header that is extended/actived (i.e. Metaphors)
  * @param {object} currentItem - The current group check item that is active (i.e. Luke 1:1)
  */
@@ -149,10 +148,11 @@ class GroupMenuContainer extends React.Component {
       });
       let selections = selectionsArray.join(" ")
       let active = isEqual(groupItemData.contextId, this.props.contextIdReducer.contextId);
-      let bookName = this.props.projectDetailsReducer.bookName;
+      let bookName = this.props.projectDetailsReducer.manifest.project.name;
+
       if (selections) {
         //Convert the book name to the abbreviation tit -> Tit
-        let bookAbbr = this.props.projectDetailsReducer.params.bookAbbr;
+        let bookAbbr = this.props.projectDetailsReducer.manifest.project.id;
         bookName = bookAbbr.charAt(0).toUpperCase() + bookAbbr.slice(1);
       }
       items.push(<GroupItem
@@ -161,7 +161,7 @@ class GroupMenuContainer extends React.Component {
         scrollIntoView={this.scrollIntoView} {...this.props}
         active={active} {...groupItemData}
         key={index} bookName={bookName}
-        selectionText={selections} 
+        selectionText={selections}
         inView={this.inView}/>)
       index++
     }
@@ -177,6 +177,7 @@ class GroupMenuContainer extends React.Component {
     let { groupsIndex } = this.props.groupsIndexReducer
     let groups = <div /> // leave an empty container when required data isn't available
     let { groupsData } = this.props.groupsDataReducer
+
     if (groupsIndex !== undefined) {
       groups = groupsIndex.filter(groupIndex => {
         return groupsData !== undefined && Object.keys(groupsData).includes(groupIndex.id)
@@ -193,10 +194,17 @@ class GroupMenuContainer extends React.Component {
         const getGroupItems = (groupHeaderComponent) => {
           return this.getGroupItemComponents(currentGroupData, groupIndex, groupHeaderComponent)
         }
-        return <Group getGroupItems={getGroupItems}
-         {...this.props} groupIndex={groupIndex} active={active} key={groupIndex.id} progress={progress}
-         openGroup={() => this.props.actions.changeCurrentContextId(currentGroupData[0].contextId)}
-         />
+        return (
+          <Group
+            {...this.props}
+            getGroupItems={getGroupItems}
+            groupIndex={groupIndex}
+            active={active}
+            key={groupIndex.id}
+            progress={progress}
+            openGroup={() => this.props.actions.groupMenuChangeGroup(currentGroupData[0].contextId)}
+          />
+        )
       }
       )
     }
@@ -250,14 +258,18 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch, ownProps) => {
+const mapDispatchToProps = (dispatch) => {
   return {
     actions: {
       changeCurrentContextId: contextId => {
         dispatch(changeCurrentContextId(contextId));
       },
-      onToggleMenu: () => {
-        dispatch(toggleMenu());
+      groupMenuChangeGroup: contextId => {
+        dispatch(changeCurrentContextId(contextId));
+        dispatch(expandSubMenu(true));
+      },
+      groupMenuExpandSubMenu: isSubMenuExpanded => {
+        dispatch(expandSubMenu(isSubMenuExpanded));
       }
     }
   }

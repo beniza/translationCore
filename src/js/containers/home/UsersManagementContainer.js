@@ -1,14 +1,17 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+// actions
 import * as PopoverActions from '../../actions/PopoverActions';
 import * as LoginActions from '../../actions/LoginActions';
 import * as AlertModalActions from '../../actions/AlertModalActions';
 import * as BodyUIActions from '../../actions/BodyUIActions';
 import * as OnlineModeActions from '../../actions/OnlineModeActions';
-import LoginContainer from './LoginContainer';
-import Logout from '../../components/home/usersManagement/Logout';
+// components
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { Card } from 'material-ui/Card';
+import LoginContainer from '../../components/home/usersManagement';
+import Logout from '../../components/home/usersManagement/Logout';
 
 class UsersManagementContainer extends Component {
 
@@ -16,6 +19,9 @@ class UsersManagementContainer extends Component {
     let instructions = this.instructions();
     if (this.props.reducers.homeScreenReducer.homeInstructions !== instructions) {
       this.props.actions.changeHomeInstructions(instructions);
+    }
+    if (this.props.reducers.loginReducer.userdata.username) {
+      this.props.actions.updateStepLabel(1, this.props.reducers.loginReducer.userdata.username)
     }
   }
 
@@ -68,9 +74,8 @@ class UsersManagementContainer extends Component {
       background: 'white', padding: '20px',
       marginTop: '5px', display: 'flex'
     }
-    const { loggedInUser } = this.props.reducers.loginReducer;
-    const userdata = this.props.reducers.loginReducer.userdata || {};
-    const { username, email } = userdata;
+    const { loggedInUser, userdata } = this.props.reducers.loginReducer;
+    const { username, email } = userdata || {};
 
     return (
       <div style={{ height: '100%', width: '100%' }}>
@@ -80,13 +85,9 @@ class UsersManagementContainer extends Component {
             {!loggedInUser ?
               <LoginContainer
                 {...this.props}
-                loginUser={(loginCredentials) => {
-                  this.props.actions.loginUser(loginCredentials);
-                  this.showLoggedInInstructions();
-                }}
-                loginLocalUser={(localUsername) => {
-                  console.log("local")
-                  this.props.actions.loginLocalUser(localUsername);
+                loginUser={(loginCredentials, local) => {
+                  this.props.actions.loginUser(loginCredentials, local);
+                  this.props.actions.updateStepLabel(1, loginCredentials.username);
                   this.showLoggedInInstructions();
                 }}
               />
@@ -108,15 +109,21 @@ class UsersManagementContainer extends Component {
   }
 }
 
+const mapStateToProps = (state,) => {
+  return {
+    reducers: {
+      homeScreenReducer: state.homeScreenReducer,
+      loginReducer: state.loginReducer
+    }
+  }
+}
+
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     actions: {
       ...ownProps.actions,
-      loginUser: (userDataSumbit) => {
-        dispatch(LoginActions.loginUser(userDataSumbit));
-      },
-      loginLocalUser: (username) => {
-        dispatch(LoginActions.loginLocalUser(username))
+      loginUser: (userDataSumbit, local) => {
+        dispatch(LoginActions.loginUser(userDataSumbit, local));
       },
       showPopover: (title, bodyText, positionCoord) => {
         dispatch(PopoverActions.showPopover(title, bodyText, positionCoord));
@@ -138,15 +145,23 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       },
       confirmOnlineAction: (callback) => {
         dispatch(OnlineModeActions.confirmOnlineAction(callback));
+      },
+      changeHomeInstructions: (instructions) => {
+        dispatch(BodyUIActions.changeHomeInstructions(instructions));
+      },
+      updateStepLabel: (index, label) => {
+        dispatch(BodyUIActions.updateStepLabel(index, label));
       }
     }
   }
 };
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    homeScreenReducer: state.homeScreenReducer
-  }
-}
+UsersManagementContainer.propTypes = {
+  reducers: PropTypes.object.isRequired,
+  actions: PropTypes.object.isRequired
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(UsersManagementContainer);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(UsersManagementContainer);

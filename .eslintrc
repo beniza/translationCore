@@ -20,5 +20,15 @@
         "jsx": true,
         "modules": true
     }
+  },
+  "globals": {
+    "console": true,
+    "window": true,
+    "setTimeout": true,
+    "Promise": true,
+    "process": true,
+    "__dirname": true,
+    "localStorage": true,
+    "document": true
   }
 }

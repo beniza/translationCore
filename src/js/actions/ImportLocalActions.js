@@ -7,9 +7,9 @@ import { remote } from 'electron';
 import * as AlertModalActions from './AlertModalActions';
 import * as BodyUIActions from './BodyUIActions';
 import * as ProjectSelectionActions from './ProjectSelectionActions';
+import * as ProjectDetailsActions from './projectDetailsActions';
 //helpers
-import * as LoadHelpers from '../helpers/LoadHelpers';
-import * as ProjectSelectionHelpers from '../helpers/ProjectSelectionHelpers';
+import * as usfmHelpers from '../helpers/usfmHelpers';
 // contstants
 const { dialog } = remote;
 const DEFAULT_SAVE = path.join(path.homedir(), 'translationCore', 'projects');
@@ -28,27 +28,42 @@ const ALERT_MESSAGE = (
  */
 export function selectLocalProjectToLoad() {
   return ((dispatch) => {
-    dialog.showOpenDialog({ properties: ['openFile', 'openDirectory'] }, (filePaths) => {      
+    dialog.showOpenDialog({ properties: ['openFile', 'openDirectory'] }, (filePaths) => {
+      dispatch(AlertModalActions.openAlertDialog(`Importing local project`, true));
+      //no file path given
+      if (!filePaths) dispatch(AlertModalActions.openAlertDialog('Project import cancelled', false));
       const sourcePath = filePaths[0];
       const fileName = path.parse(sourcePath).base.split('.')[0];
       // project path in ~./translationCore.
       let newProjectPath = path.join(DEFAULT_SAVE, fileName);
-      let usfmFilePath = LoadHelpers.isUSFMProject(sourcePath)
+      let usfmFilePath = usfmHelpers.isUSFMProject(sourcePath)
       dispatch(BodyUIActions.toggleProjectsFAB());
       if (filePaths === undefined) {
-        dispatch(AlertModalActions.openAlertDialog(ALERT_MESSAGE));
-      } else if (usfmFilePath) {
-        newProjectPath = ProjectSelectionHelpers.setUpUSFMFolderPath(usfmFilePath);
-        dispatch(selectAndLoadProject(newProjectPath));
-      }
-      else if (path.extname(sourcePath) === '.tstudio') {
+        //need to break out of function here so that successfull import
+        //dialog does not dispatch
+        return dispatch(AlertModalActions.openAlertDialog(ALERT_MESSAGE));
+      } else if (path.extname(sourcePath) === '.tstudio') {
         // unzip project to ~./translationCore folder.
+        dispatch(ProjectDetailsActions.setProjectType('tS'));
         dispatch(unzipTStudioProject(sourcePath, fileName));
       } else if (verifyIsValidProject(sourcePath)) {
+        // not tStudio ext project, checking for tC / tS (unzipped)
+        dispatch(ProjectDetailsActions.setProjectType('tC'));
+        if (!fs.existsSync(newProjectPath))
         fs.copySync(sourcePath, newProjectPath)
-        dispatch(selectAndLoadProject(newProjectPath));
+        dispatch(ProjectSelectionActions.selectProject(newProjectPath));
+      } else if (usfmFilePath) {
+        //If USFM file path found and not tS or tC project
+        dispatch(ProjectDetailsActions.setProjectType('usfm'));
+        //If the selected project is a USFM file or contains a usfm file in the folder 
+        newProjectPath = usfmHelpers.setUpUSFMFolderPath(usfmFilePath);
+        if (newProjectPath) dispatch(ProjectSelectionActions.selectProject(newProjectPath));
+        else {
+          dispatch(AlertModalActions.openAlertDialog('The project you selected already exists.\
+           Reimporting existing projects is not currently supported.'))
+        }
       } else {
-        dispatch(
+        return dispatch(
           AlertModalActions.openAlertDialog(
             <div>
               There is something wrong with the project you are trying to load.<br />
@@ -58,6 +73,7 @@ export function selectLocalProjectToLoad() {
           )
         );
       }
+      dispatch(AlertModalActions.openAlertDialog('Project imported successfully.', false));
     });
   });
 }
@@ -68,10 +84,10 @@ function unzipTStudioProject(projectSourcePath, fileName) {
     const newProjectPath = path.join(DEFAULT_SAVE, fileName);
     if (!fs.existsSync(newProjectPath)) {
       zip.extractAllTo(DEFAULT_SAVE, /*overwrite*/true);
-      dispatch(selectAndLoadProject(newProjectPath));
+      dispatch(ProjectSelectionActions.selectProject(newProjectPath));
     } else {
       dispatch(AlertModalActions.openAlertDialog(
-        `A project with the name ${fileName} already exists. Reimporting 
+        `A project with the name ${fileName} already exists. Reimporting
          existing projects is not currently supported.`
       ));
     }
@@ -87,13 +103,4 @@ function verifyIsValidProject(projectSourcePath) {
     }
   }
   return false;
-}
-
-function selectAndLoadProject(projectPath) {
-  return ((dispatch) => {
-    // select project and load it.
-    dispatch(ProjectSelectionActions.selectProject(projectPath));
-    // display ToolsCards.
-    dispatch(BodyUIActions.goToStep(3));
-  });
 }

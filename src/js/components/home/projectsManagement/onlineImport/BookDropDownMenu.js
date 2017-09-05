@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { SelectField, MenuItem } from 'material-ui';
-import BooksOfTheBible from './BooksOfTheBible';
+import BooksOfTheBible from '../../../../common/BooksOfTheBible';
 
-const BookDropDownMenu = ({
+const BookDropdownMenu = ({
   bookIdValue,
   updateBookIdValue
 }) => {
@@ -30,9 +30,9 @@ const BookDropDownMenu = ({
   );
 }
 
-BookDropDownMenu.propTypes = {
+BookDropdownMenu.propTypes = {
   bookIdValue: PropTypes.string.isRequired,
   updateBookIdValue: PropTypes.func.isRequired
 };
 
-export default BookDropDownMenu;
+export default BookDropdownMenu;
