@@ -5,9 +5,12 @@ import configureStore from '../utils/configureStore'
 import Application from './app'
 import { loadState, saveState } from '../utils/localStorage'
 import throttle from 'lodash/throttle'
+import * as LoaderActions from '../actions/LoaderActions';
+import * as AlertModalActions from '../actions/AlertModalActions';
 //loading persistedState from filesystem using loadState()
 const persistedState = loadState();
 const store = configureStore(persistedState)
+
 /** @description:
  * The app store will be saved on state changes
  * subscribe listens for change in store
@@ -22,7 +25,35 @@ store.subscribe(setupSubscriptions(store)(
   ({ prevState, newState }) => {
     saveState(prevState, newState);
   }
+
 ));
+
+process.on('uncaughtException', handleAppError)
+
+window.onerror = handleAppError;
+
+console.error = handleAppError;
+
+window.addEventListener("error", handleAppError)
+
+function handleAppError (e) {
+  e = e.message || e;
+  debugger;
+  let { show } = store.getState().loaderReducer;
+  if (show) {
+    debugger;
+    store.dispatch(LoaderActions.toggleWaitingTooLongButton(true))
+  } else {
+    debugger;
+    store.dispatch(AlertModalActions.openAlertDialog(
+      <div>
+        There was a fatal error<br />
+        {e.message}<br /><br />
+        Press OK to restart
+      </div>
+    ))
+  }
+}
 
 module.exports.App = (
   <Provider store={store}>

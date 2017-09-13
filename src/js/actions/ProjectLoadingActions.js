@@ -60,8 +60,7 @@ function getGroupsIndex(dispatch, dataDirectory, currentToolName) {
         console.log('Loaded group index data from fs');
         resolve(true);
       } catch (err) {
-        console.log(err);
-        resolve(true);
+        console.error(err);
       }
     } else {
       // The groupIndex file was not found in the directory thus copy
